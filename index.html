@@ -2,153 +2,209 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YouTube 動画情報取得</title>
+    <title>最強YouTube動画情報サイト・自動色彩変化型</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
         body {
-            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+            /* レインボーグラデーション・アニメーション背景 */
+            background: linear-gradient(270deg,
+                #ff0080,
+                #7928ca,
+                #2dc7ff,
+                #12c2e9,
+                #f7797d,
+                #fbc2eb,
+                #43e97b,
+                #38f9d7,
+                #ff0080);
+            background-size: 1800% 1800%;
+            animation: rainbowBg 18s ease-in-out infinite;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-        .spinner {
-            border: 4px solid rgba(0, 0, 0, 0.1);
-            width: 36px;
-            height: 36px;
+        @keyframes rainbowBg {
+            0% {background-position:0% 50%;}
+            50% {background-position:100% 50%;}
+            100% {background-position:0% 50%;}
+        }
+        .glass-card {
+            background: rgba(255,255,255,0.92);
+            backdrop-filter: blur(8px);
+            border-radius: 32px;
+            box-shadow: 0 0 42px 0 rgba(108,0,153,0.08);
+            border: 2px solid #2dc7ff;
+        }
+        .spinorb {
+            position: absolute;
             border-radius: 50%;
-            border-left-color: #3b82f6;
-            animation: spin 1s ease infinite;
+            filter: blur(45px);
+            opacity: 0.37;
+            animation: spinorbit 12s infinite alternate;
         }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        .spinorb1 { width: 340px; height: 340px; left: 5%; top: 15%; background: #ff80b2;}
+        .spinorb2 { width: 220px; height: 220px; right: 5%; top: 55%; background: #ffd740;}
+        .spinorb3 { width: 150px; height: 150px; left: 68%; top: 70%; background: #b39ddb;}
+        @keyframes spinorbit {from{transform:scale(1);}to{transform:scale(1.19);}}
+        .copy-btn {
+            cursor:pointer; margin-left:8px; font-size:90%;
+            background: #e3f2fd; color: #1976d2; border:none; border-radius: 6px; padding:3px 8px;
         }
+        .copy-btn:active { background: #bbdefb; }
     </style>
 </head>
-<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
-
-    <div class="bg-white p-8 rounded-2xl shadow-xl max-w-lg w-full text-center">
-        <h1 class="text-3xl font-bold mb-4 text-gray-800">YouTube 動画情報取得</h1>
-        <p class="text-gray-600 mb-6">動画のURLを入力してください。</p>
-        
-        <form id="infoForm" class="space-y-4">
-            <input 
-                type="text" 
-                id="videoUrl" 
-                placeholder="YouTubeの動画URLをここに貼り付け"
-                class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200"
-            />
-            <button 
-                type="submit" 
-                id="infoButton"
-                class="w-full bg-blue-600 text-white font-semibold py-3 px-4 rounded-xl shadow-lg hover:bg-blue-700 transition-all duration-200 transform hover:scale-105 flex items-center justify-center"
-            >
-                <span id="buttonText">情報を取得</span>
-                <div id="loadingSpinner" class="spinner hidden ml-2"></div>
+<body>
+    <div class="spinorb spinorb1"></div>
+    <div class="spinorb spinorb2"></div>
+    <div class="spinorb spinorb3"></div>
+    <div class="glass-card z-10 w-full max-w-2xl mx-auto p-8 text-center border-2 relative">
+        <h1 class="text-4xl font-black mb-5 bg-gradient-to-r from-pink-500 via-cyan-400 to-teal-600 bg-clip-text text-transparent drop-shadow-lg tracking-wide">
+            最強YouTube動画情報収集サイト
+        </h1>
+        <div class="text-base text-gray-800 mb-7">下の欄にYouTube動画のURLを貼り付けてください。<br>（色が自動で変わるカラフル背景！）</div>
+        <form id="infoForm" class="mb-4 flex flex-col items-center gap-4">
+            <input
+                type="text" id="videoUrl"
+                placeholder="YouTube動画URL"
+                class="w-full px-4 py-3 rounded-xl border border-blue-300 focus:outline-none focus:ring-2 focus:ring-pink-300 transition-all duration-200 text-lg" />
+            <button type="submit"
+                class="w-full bg-gradient-to-r from-pink-500 via-cyan-400 to-teal-500 text-white font-bold py-3 rounded-xl shadow-lg hover:scale-105 transition-transform duration-200 text-xl flex justify-center items-center">
+                <span id="buttonText">動画情報収集</span>
+                <div id="loadingSpinner" class="hidden ml-2 border-4 border-pink-400 border-t-blue-500 animate-spin rounded-full w-6 h-6"></div>
             </button>
         </form>
-
-        <div id="messageArea" class="mt-6 text-left">
-            <!-- メッセージがここに表示されます -->
-        </div>
-
-        <div id="videoInfo" class="mt-6 text-left hidden">
-            <h2 class="text-2xl font-semibold mb-4 text-gray-800">動画詳細</h2>
-            <img id="thumbnail" class="w-full h-auto rounded-lg mb-4 shadow-md" alt="動画サムネイル">
-            <p class="text-lg font-bold">タイトル:</p>
-            <p id="title" class="mb-2 text-gray-700"></p>
-            <p class="text-lg font-bold">再生時間:</p>
-            <p id="duration" class="mb-2 text-gray-700"></p>
-            <p class="text-lg font-bold">画質:</p>
-            <p id="quality" class="mb-2 text-gray-700"></p>
+        <div id="messageArea" class="mb-2"></div>
+        <div id="videoInfo" class="mt-6 hidden text-left">
+            <div class="flex flex-row items-start mb-7">
+                <img id="thumbnail" class="w-48 h-auto rounded-lg shadow-md border-2 border-cyan-200" alt="動画サムネイル">
+                <div class="flex-1 ml-6">
+                    <p class="text-xl font-semibold"><span id="title"></span>
+                      <button class="copy-btn" onclick="copyVal('title')">コピー</button>
+                    </p>
+                    <p class="text-lg"><span class="font-bold">チャンネル:</span> <span id="author"></span>
+                      <button class="copy-btn" onclick="copyVal('author')">コピー</button>
+                    </p>
+                    <p><span class="font-bold">再生回数:</span> <span id="viewCount"></span></p>
+                    <p><span class="font-bold">動画時間:</span> <span id="duration"></span></p>
+                    <p><span class="font-bold">画質:</span> <span id="quality"></span></p>
+                    <p><span class="font-bold">投稿日:</span> <span id="publishdate"></span></p>
+                </div>
+            </div>
+            <div class="mb-3">
+                <span class="font-bold">概要欄:</span>
+                <div id="description" class="p-2 bg-blue-50 border border-cyan-200 rounded-xl mb-2 text-gray-700"></div>
+                <button class="copy-btn" onclick="copyVal('description')">コピー</button>
+            </div>
+            <div>
+                <span class="font-bold">タグ:</span> <span id="tags" class="align-middle"></span>
+                <button class="copy-btn" onclick="copyVal('tags')">コピー</button>
+            </div>
         </div>
     </div>
-
     <script>
+        function copyVal(id){
+            const el = document.getElementById(id);
+            if(el){
+                navigator.clipboard.writeText(el.innerText);
+                el.style.background = "#d1f7c4";
+                setTimeout(()=>{el.style.background="";}, 500);
+            }
+        }
         document.addEventListener('DOMContentLoaded', () => {
             const form = document.getElementById('infoForm');
             const videoUrlInput = document.getElementById('videoUrl');
             const messageArea = document.getElementById('messageArea');
-            const infoButton = document.getElementById('infoButton');
             const buttonText = document.getElementById('buttonText');
             const loadingSpinner = document.getElementById('loadingSpinner');
             const videoInfoDiv = document.getElementById('videoInfo');
             const thumbnailImg = document.getElementById('thumbnail');
             const titleP = document.getElementById('title');
+            const authorP = document.getElementById('author');
             const durationP = document.getElementById('duration');
             const qualityP = document.getElementById('quality');
+            const publishdateP = document.getElementById('publishdate');
+            const descriptionDiv = document.getElementById('description');
+            const tagsSpan = document.getElementById('tags');
+            const viewCountSpan = document.getElementById('viewCount');
 
             form.addEventListener('submit', async (e) => {
                 e.preventDefault();
-
                 const url = videoUrlInput.value.trim();
                 videoInfoDiv.classList.add('hidden');
-                showMessage('info', '動画情報を取得しています...');
-                infoButton.disabled = true;
-                buttonText.textContent = '取得中...';
+                showMessage('info', '動画情報を収集しています...');
+                buttonText.textContent = '収集中...';
                 loadingSpinner.classList.remove('hidden');
 
                 try {
-                    // YouTube APIを使わずに直接HTMLをパースする簡単な方法
-                    // これは非常に不安定な方法であり、YouTubeのHTML構造変更で動かなくなる可能性があります。
-                    // 信頼性の高いアプリケーションには適していません。
                     const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
                     const response = await fetch(proxyUrl);
                     const jsonResponse = await response.json();
                     const text = jsonResponse.contents;
-                    
                     const doc = new DOMParser().parseFromString(text, 'text/html');
-                    
-                    // エラーを修正し、`ytInitialPlayerResponse`を含むスクリプトタグを見つける
-                    const scriptTag = Array.from(doc.querySelectorAll('script')).find(script => 
+                    const scriptTag = Array.from(doc.querySelectorAll('script')).find(script =>
                         script.textContent.includes('ytInitialPlayerResponse')
                     );
-
-                    if (!scriptTag) {
-                        throw new Error('動画情報が見つかりません。URLを確認してください。');
-                    }
-                    
-                    // 正規表現をより柔軟に修正
+                    if (!scriptTag) throw new Error('動画情報が見つかりません。URLを確認してください。');
                     const jsonMatch = scriptTag.textContent.match(/ytInitialPlayerResponse\s*=\s*({[\s\S]*?})\s*;/);
-
-                    if (!jsonMatch || !jsonMatch[1]) {
-                        throw new Error('動画データの解析に失敗しました。');
-                    }
-
-                    const jsonString = jsonMatch[1];
-                    const data = JSON.parse(jsonString);
+                    if (!jsonMatch || !jsonMatch[1]) throw new Error('動画データの解析に失敗しました。');
+                    const data = JSON.parse(jsonMatch[1]);
 
                     const videoDetails = data.videoDetails;
+                    if (!videoDetails) throw new Error('動画情報が取得できませんでした。');
 
-                    if (!videoDetails) {
-                        throw new Error('動画情報が取得できませんでした。');
-                    }
-                    
-                    // 再生時間を秒単位から分:秒形式に変換
+                    // タイトル・チャンネル・サムネ
+                    thumbnailImg.src = videoDetails.thumbnail.thumbnails[videoDetails.thumbnail.thumbnails.length-1].url;
+                    titleP.innerText = videoDetails.title;
+                    authorP.innerText = videoDetails.author;
+
+                    // 再生数
+                    viewCountSpan.innerText = videoDetails.viewCount ? parseInt(videoDetails.viewCount).toLocaleString() : "不明";
+
+                    // 動画時間
                     const seconds = parseInt(videoDetails.lengthSeconds, 10);
                     const minutes = Math.floor(seconds / 60);
                     const remainingSeconds = seconds % 60;
                     const formattedDuration = `${minutes}:${remainingSeconds < 10 ? '0' : ''}${remainingSeconds}`;
-                    
-                    // 画質情報は利用可能な最高画質を取得
-                    const quality = data.streamingData.formats
-                        .sort((a, b) => b.height - a.height)
+                    durationP.innerText = formattedDuration;
+
+                    // 画質
+                    const quality = data.streamingData?.formats
+                        ?.sort((a, b) => b.height - a.height)
                         .find(f => f.qualityLabel)
                         ?.qualityLabel || '不明';
+                    qualityP.innerText = quality;
 
-                    thumbnailImg.src = videoDetails.thumbnail.thumbnails[0].url;
-                    titleP.textContent = videoDetails.title;
-                    durationP.textContent = formattedDuration;
-                    qualityP.textContent = quality;
-                    
+                    // 投稿日時（microformat/availableでカバー）
+                    let publishDate = "不明";
+                    if(data.microformat?.playerMicroformatRenderer?.publishDate){
+                        publishDate = data.microformat.playerMicroformatRenderer.publishDate;
+                    }
+                    publishdateP.innerText = publishDate;
+
+                    // 概要欄（description）
+                    if(videoDetails.shortDescription){
+                        descriptionDiv.innerHTML = videoDetails.shortDescription.replace(/\n/g,"<br>");
+                    } else {
+                        descriptionDiv.innerHTML = "取得不可";
+                    }
+
+                    // タグ
+                    if(videoDetails.keywords && videoDetails.keywords.length > 0){
+                        tagsSpan.innerText = videoDetails.keywords.join(", ");
+                    } else {
+                        tagsSpan.innerText = "なし";
+                    }
+
                     videoInfoDiv.classList.remove('hidden');
-                    showMessage('success', '情報の取得が完了しました。');
-
+                    showMessage('success', '動画情報を収集しました！');
                 } catch (error) {
-                    console.error('Fetch error:', error);
-                    showMessage('error', `エラーが発生しました: ${error.message}`);
+                    showMessage('error', `エラー: ${error.message}`);
                 } finally {
-                    infoButton.disabled = false;
-                    buttonText.textContent = '情報を取得';
+                    buttonText.textContent = '動画情報収集';
                     loadingSpinner.classList.add('hidden');
                 }
             });
@@ -156,30 +212,17 @@
             function showMessage(type, text) {
                 let colorClass, title;
                 switch (type) {
-                    case 'info':
-                        colorClass = 'bg-blue-100 border-blue-400 text-blue-700';
-                        title = '情報:';
-                        break;
-                    case 'error':
-                        colorClass = 'bg-red-100 border-red-400 text-red-700';
-                        title = 'エラー:';
-                        break;
-                    case 'success':
-                        colorClass = 'bg-green-100 border-green-400 text-green-700';
-                        title = '成功:';
-                        break;
-                    default:
-                        colorClass = 'bg-gray-100 border-gray-400 text-gray-700';
-                        title = 'メッセージ:';
+                    case 'info': colorClass = 'bg-pink-50 border-pink-400 text-pink-700'; title = '情報:'; break;
+                    case 'error': colorClass = 'bg-red-100 border border-red-400 text-red-700'; title = 'エラー:'; break;
+                    case 'success': colorClass = 'bg-green-100 border border-green-400 text-green-700'; title = '成功:'; break;
+                    default: colorClass = 'bg-gray-100 border border-gray-400 text-gray-700'; title = 'メッセージ:';
                 }
-
-                const message = `
-                    <div class="p-4 rounded-lg relative shadow-md ${colorClass}" role="alert">
+                messageArea.innerHTML = `
+                    <div class="p-4 rounded-lg shadow-md border ${colorClass}" role="alert">
                         <strong class="font-bold">${title}</strong>
                         <span class="block sm:inline">${text}</span>
                     </div>
                 `;
-                messageArea.innerHTML = message;
             }
         });
     </script>
